@@ -11,13 +11,13 @@ A lightweight **ChatOps + SRE dashboard** powered by **FastAPI** and **Google Ge
 
 ## ✨ Highlights
 
-- **FastAPI backend** serving both APIs and a static UI. citeturn1search1turn11search1
-- **Real local health** (CPU/Mem/Disk/Uptime) gathered using `psutil`. citeturn1search1
-- **Azure checks (optional)** via `DefaultAzureCredential` + ARM REST calls. citeturn1search1
-- **Custom endpoint monitoring (optional)** via HTTP GET + latency measurement. citeturn1search1
-- **Metrics endpoint** provides a 24h series for charts (synthetic trend based on live CPU/mem base). citeturn1search1
-- **Daily report generator** uses Gemini to produce Markdown output. citeturn1search1
-- **ChatOps quick buttons** in UI (Health/Metrics/Report/Run via Chat/Daily Report). citeturn11search1turn6search1
+- **FastAPI backend** serving both APIs and a static UI.
+- **Real local health** (CPU/Mem/Disk/Uptime) gathered using `psutil`.
+- **Azure checks (optional)** via `DefaultAzureCredential` + ARM REST calls. 
+- **Custom endpoint monitoring (optional)** via HTTP GET + latency measurement. 
+- **Metrics endpoint** provides a 24h series for charts (synthetic trend based on live CPU/mem base). 
+- **Daily report generator** uses Gemini to produce Markdown output.
+- **ChatOps quick buttons** in UI (Health/Metrics/Report/Run via Chat/Daily Report).
 
 ---
 
@@ -64,7 +64,7 @@ InfraCopilot Lite provides a unified hybrid‑health view with:
 
 ### 📸 UI Dashboard Preview
 
-![InfraCopilot Dashboard](app/public/screenshot.png)
+![InfraCopilot Dashboard](infra-copilot-lite-gemini-files/docs/screenshot.png)
 
 ---
 
@@ -87,7 +87,7 @@ GEMINI_API_KEY=YOUR_GEMINI_KEY
 GEMINI_MODEL=gemini-1.5-flash
 ```
 
-You can use `GET /api/models` to list models available for your key. citeturn1search1
+You can use `GET /api/models` to list models available for your key.
 
 ### ☁️ Optional (Azure health checks)
 
@@ -96,7 +96,7 @@ AZURE_SUBSCRIPTION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 AZURE_RESOURCE_GROUP=your-resource-group
 ```
 
-If these are not set, Azure health checks return `not_configured`. citeturn1search1
+If these are not set, Azure health checks return `not_configured`.
 
 ### 🌐 Optional (Custom endpoints)
 
@@ -116,7 +116,7 @@ LOCAL_MEM_WARN=90
 LOCAL_DISK_WARN=90
 ```
 
-Warnings are generated when thresholds are exceeded. citeturn1search1
+Warnings are generated when thresholds are exceeded. 
 
 ---
 
@@ -155,8 +155,8 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ### 5) Open UI
 
-- UI: http://localhost:8000/ citeturn11search1turn1search1
-- Health probe: http://localhost:8000/healthz citeturn1search1
+- UI: http://localhost:8000/ 
+- Health probe: http://localhost:8000/healthz 
 
 ---
 
@@ -183,7 +183,7 @@ You can run them in two ways:
 - Disk utilization (`psutil.disk_usage`)
 - Uptime seconds (`psutil.boot_time` delta)
 
-These are computed in `local_health()` and returned under `data.local`. citeturn1search1
+These are computed in `local_health()` and returned under `data.local`. 
 
 #### Run via UI
 
@@ -195,7 +195,7 @@ The dashboard updates:
 - KPI totals/healthy/warnings
 - Health details panel
 
-The UI wiring for the health button is in `app.js` via `btnHealth → runHealth() → /api/healthcheck`. citeturn6search1turn11search1
+The UI wiring for the health button is in `app.js` via `btnHealth → runHealth() → /api/healthcheck`.
 
 #### Run via API
 
@@ -225,7 +225,7 @@ Look for:
 - Compare with OS tools (Task Manager / Activity Monitor / `top`, `df -h`).
 - Create a brief CPU load and re-run `/api/healthcheck`; CPU% should change.
 
-> Note: values reflect the machine running the FastAPI server (not the browser client). citeturn1search1
+> Note: values reflect the machine running the FastAPI server (not the browser client).
 
 ---
 
@@ -239,7 +239,7 @@ When configured, the backend uses Azure ARM REST to list and evaluate:
 - **App Services**: checks `properties.state`
 - **Storage Accounts**: checks `properties.provisioningState`
 
-These checks run in `azure_health()` and are included under `data.azure`. citeturn1search1
+These checks run in `azure_health()` and are included under `data.azure`.
 
 #### Enable Azure checks
 
@@ -254,8 +254,7 @@ AZURE_RESOURCE_GROUP=...
    - Locally: `az login` is commonly used.
    - In cloud: Managed Identity can be used.
 
-Azure token acquisition is handled by `DefaultAzureCredential` in `_azure_get_token()`. citeturn1search1
-
+Azure token acquisition is handled by `DefaultAzureCredential` in `_azure_get_token()`. 
 #### Run and view output
 
 ```bash
@@ -268,8 +267,7 @@ Check `data.azure`:
 - `status: ok|warnings|not_configured|auth_failed`
 - lists: `vms`, `appServices`, `storageAccounts`
 
-If Azure is not configured, the API returns `configured=false` and a message. citeturn1search1
-
+If Azure is not configured, the API returns `configured=false` and a message. 
 ---
 
 ### 🌐 C) Custom Endpoint Health (Optional)
@@ -282,7 +280,7 @@ For each configured endpoint, the backend performs:
 - marks **UP** for 2xx/3xx
 - records latency in ms
 
-This runs in `custom_endpoints_health()` and is included under `data.custom`. citeturn1search1
+This runs in `custom_endpoints_health()` and is included under `data.custom`. 
 
 #### Enable endpoint checks
 
@@ -314,7 +312,7 @@ Check `data.custom.results`:
 }
 ```
 
-Down endpoints appear as `status: DOWN` and include an error string. citeturn1search1
+Down endpoints appear as `status: DOWN` and include an error string. 
 
 ---
 
@@ -327,7 +325,7 @@ Down endpoints appear as `status: DOWN` and include an error string. citet
   - decide which tool(s) to run
   - generate a final answer using tool outputs
 
-The UI (chat + ChatOps pills) calls `/api/chat` from `app.js`. citeturn6search1
+The UI (chat + ChatOps pills) calls `/api/chat` from `app.js`.
 
 ### Example prompts
 
@@ -345,7 +343,7 @@ The UI includes quick buttons above chat:
 - Run via Chat
 - Daily Report (Chat)
 
-These are rendered in `index.html` and wired in `app.js`. citeturn11search1turn6search1
+These are rendered in `index.html` and wired in `app.js`.
 
 ---
 
@@ -354,7 +352,7 @@ These are rendered in `index.html` and wired in `app.js`. citeturn11search
 - `GET /api/metrics` returns a 24h series suitable for charts.
 - It uses current CPU/memory as a base and generates a synthetic series for the last 24h.
 
-This behavior is implemented in `api_metrics()` and is intended for dashboard demos. citeturn1search1
+This behavior is implemented in `api_metrics()` and is intended for dashboard demos.
 
 ---
 
@@ -372,7 +370,7 @@ curl -X POST http://localhost:8000/api/report \
   -d '{}'
 ```
 
-The backend will auto-run healthcheck/metrics if not provided and then ask Gemini to generate markdown. citeturn1search1
+The backend will auto-run healthcheck/metrics if not provided and then ask Gemini to generate markdown.
 
 ---
 
@@ -380,17 +378,17 @@ The backend will auto-run healthcheck/metrics if not provided and then ask Gemin
 
 ### Chat fails with “GEMINI_API_KEY missing”
 
-- Ensure `.env` contains `GEMINI_API_KEY` and restart the server. citeturn1search1
+- Ensure `.env` contains `GEMINI_API_KEY` and restart the server. 
 
 ### Azure shows `auth_failed`
 
 - Ensure Azure auth is available (e.g., local `az login`, managed identity in cloud).
-- Confirm `AZURE_SUBSCRIPTION_ID` and `AZURE_RESOURCE_GROUP` are set. citeturn1search1
+- Confirm `AZURE_SUBSCRIPTION_ID` and `AZURE_RESOURCE_GROUP` are set.
 
 ### Custom endpoints not running
 
 - Confirm `CUSTOM_ENDPOINTS` is valid JSON list.
-- Confirm endpoint is reachable from the server host. citeturn1search1
+- Confirm endpoint is reachable from the server host.
 
 ---
 
