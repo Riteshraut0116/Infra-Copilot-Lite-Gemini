@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <!-- Mobile friendly viewport -->
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>InfraCopilot Lite</title>
+
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
+
+  <!-- Load Chart.js without blocking page render -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <!-- Load your JS without blocking HTML -->
+  <script src="/static/app.js" defer></script>
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo">∞</div>
+        <div>
+          <div class="title">InfraCopilot</div>
+          <div class="subtitle">Lite • Multi‑Agent SRE</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="navbtn" id="btnHealth"><span>✅</span> Run Health Check</button>
+        <button class="navbtn" id="btnMetrics"><span>📈</span> Load Metrics (24h)</button>
+        <button class="navbtn primary" id="btnReport"><span>🧾</span> Generate Daily Report</button>
+      </div>
+
+      <div class="card glass">
+        <div class="cardTitle">Quick Tips</div>
+        <ul class="mini">
+          <li>Ask: “Generate infra health report for today”</li>
+          <li>Ask: “Show CPU trends last 24h”</li>
+          <li>Ask: “Any risks right now?”</li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        <div class="pill" id="pillStatus">● Ready</div>
+        <div class="tiny">Local prototype → Azure later</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar glass">
+        <div class="topLeft">
+          <div class="h1">Operations Dashboard</div>
+          <div class="h2">Health • Metrics • Report • ChatOps</div>
+
+          <!-- Toolbar Controls -->
+          <div class="toolbar">
+            <button class="ghost" id="btnToggleSidebar" type="button" title="Collapse/Expand sidebar">
+              ☰ Toggle Sidebar
+            </button>
+
+            <button class="ghost" id="btnAutoRefresh" type="button" title="Auto-run Health + Metrics periodically">
+              🔁 Auto Refresh: <span id="autoRefreshState">OFF</span>
+            </button>
+
+            <label class="chipLike" title="Auto refresh interval">
+              ⏱ Interval
+              <select id="refreshInterval" aria-label="Auto refresh interval">
+                <option value="15">15s</option>
+                <option value="30" selected>30s</option>
+                <option value="60">60s</option>
+              </select>
+            </label>
+
+            <button class="ghost" id="btnClearChat" type="button" title="Clear all chat messages">
+              🧹 Clear Chat
+            </button>
+          </div>
+        </div>
+
+        <div class="topRight">
+          <div class="chip" id="chipModel">Model: —</div>
+          <div class="chip" id="chipTime">—</div>
+        </div>
+      </header>
+
+      <section class="grid">
+        <!-- KPIs -->
+        <div class="kpi glass">
+          <div class="kpiLabel">Resources</div>
+          <div class="kpiValue" id="kpiTotal">—</div>
+          <div class="kpiSub">Hybrid (Local/Azure/Custom)</div>
+        </div>
+
+        <div class="kpi glass">
+          <div class="kpiLabel">Healthy</div>
+          <div class="kpiValue green" id="kpiHealthy">—</div>
+          <div class="kpiSub">Checks passing</div>
+        </div>
+
+        <div class="kpi glass">
+          <div class="kpiLabel">Warnings</div>
+          <div class="kpiValue amber" id="kpiWarnings">—</div>
+          <div class="kpiSub" id="kpiWarnText">No alerts</div>
+        </div>
+
+        <!-- Charts -->
+        <div class="panel glass span2">
+          <div class="panelHead">
+            <div>
+              <div class="panelTitle">CPU / Memory</div>
+              <div class="panelSub">Last 24 hours</div>
+            </div>
+            <button class="ghost" id="btnRefreshCharts" type="button">Refresh</button>
+          </div>
+
+          <canvas id="chartCpu"></canvas>
+          <canvas id="chartMem" style="margin-top:14px;"></canvas>
+        </div>
+
+        <!-- Right panel -->
+        <div class="panel glass">
+          <div class="panelHead">
+            <div>
+              <div class="panelTitle">Risk Summary</div>
+              <div class="panelSub">Generated / inferred</div>
+            </div>
+          </div>
+
+          <div class="riskBox">
+            <div class="riskTag">LOW</div>
+            <div class="riskText" id="riskText">Run a health check to begin.</div>
+          </div>
+
+          <!-- Health Details block -->
+          <div class="divider"></div>
+          <div class="panelTitle">Health Details</div>
+          <div class="detailsBox" id="healthDetails">
+            <div class="muted">Run a health check to view Local/Azure/Custom details.</div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="panelTitle">Latest Report</div>
+          <div class="reportBox" id="reportBox">
+            <div class="muted">No report generated yet.</div>
+          </div>
+
+          <div class="row">
+            <button class="ghost" id="btnCopyReport" type="button">Copy</button>
+            <button class="ghost" id="btnDownloadReport" type="button">Download .md</button>
+          </div>
+        </div>
+
+        <!-- ChatOps -->
+        <div class="panel glass span3 chatPanel">
+          <div class="panelHead">
+            <div>
+              <div class="panelTitle">ChatOps</div>
+              <div class="panelSub">Gemini agent routes to tools + answers</div>
+            </div>
+          </div>
+
+          <!-- ChatOps pills (INTELLIGENT) -->
+          <!-- These data-* attributes are used by the updated app.js to bind agentic actions -->
+          <div class="quickBar" role="group" aria-label="ChatOps quick actions">
+            <!-- Keep existing IDs for backward compatibility, add data-chatops to enable agentic binding -->
+            <button class="quickPill"
+                    id="quickHealth"
+                    type="button"
+                    data-chatops="health"
+                    data-chatops-mode="health"
+                    title="Run health tool via Gemini agent">
+              ✅ Health
+            </button>
+
+            <button class="quickPill"
+                    id="quickMetrics"
+                    type="button"
+                    data-chatops="metrics"
+                    data-chatops-mode="metrics"
+                    title="Run metrics tool via Gemini agent">
+              📈 Metrics
+            </button>
+
+            <button class="quickPill"
+                    id="quickReport"
+                    type="button"
+                    data-chatops="report"
+                    data-chatops-mode="report"
+                    title="Generate report via Gemini agent">
+              🧾 Report
+            </button>
+
+            <button class="quickPill"
+                    id="quickChatHealth"
+                    type="button"
+                    data-chatops="run"
+                    data-chatops-mode="auto"
+                    title="Send the typed message to Gemini agent (or run selected mode)">
+              ▶ Run via Chat
+            </button>
+
+            <button class="quickPill"
+                    id="quickChatReport"
+                    type="button"
+                    data-chatops="daily"
+                    data-chatops-mode="daily_report"
+                    title="Daily report (Health + Metrics + Next Actions) via Gemini agent">
+              ▶ Daily Report (Chat)
+            </button>
+          </div>
+
+          <div class="chat" id="chat"></div>
+
+          <form class="composer" id="chatForm">
+            <input
+              id="chatInput"
+              inputmode="text"
+              autocomplete="off"
+              placeholder="Ask InfraCopilot… e.g., “Run health check and explain warnings”"
+            />
+            <button type="submit" class="send">Send</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</body>
+</html>
